@@ -1,0 +1,38 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Code Translation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js"></script>
+  </head>
+  <body>
+    <div>
+      <h1>SyntaxSwap Code-to-code translator</h1>
+      <h2>Enter our source code</h2>
+      <form method="POST" action="{{url_for('generate')}}">
+        <textarea name="source_code" rows="10" cols="50"></textarea><br />
+        <input type="submit" value="Generate Target Code" />
+      </form>
+      <br />
+      <h2>Generated Target Code</h2>
+      <textarea id="target_code" rows="10" cols="50" >
+{{target_code}}</textarea
+      >
+      <br />
+      <button id="copy-button" data-clipboard-target="#target_code">
+        Copy Code
+      </button>
+    </div>
+    <script>
+      var clipboard = new ClipboardJS("#copy-button");
+      clipboard.on("success", function (e) {
+        fetch("/copy")
+          .then((res) => res.json())
+          .then((data) => {
+            console.log(data.message);
+          });
+        e.clearSelection();
+      });
+    </script>
+  </body>
+</html>
