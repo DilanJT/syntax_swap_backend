@@ -42,6 +42,17 @@ def generate():
     else:
         return render_template('home.html')
 
+@app.route('/translate', methods=['POST'])
+def translate():
+    javascript_code = ""
+    if request.method == "POST":
+        java_code = request.json['java_code']
+        try:
+            javascript_code = translator.translate(java_code)
+        except:
+            print("error occured in translation")
+    
+    return {'javascript_code': javascript_code}
 
 @app.route('/copy')
 def copy():
