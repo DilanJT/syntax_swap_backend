@@ -1,8 +1,11 @@
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 import subprocess
 import translator
 #import generator
 app = Flask(__name__)
+CORS(app)
+
 
 # @app.route('/')
 # def hello_world():
@@ -52,7 +55,9 @@ def translate():
         except:
             print("error occured in translation")
     
-    return {'javascript_code': javascript_code}
+    return {'javascript_code': javascript_code,
+            'string_labels':"string labels"
+            }
 
 @app.route('/copy')
 def copy():

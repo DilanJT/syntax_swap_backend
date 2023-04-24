@@ -23,14 +23,15 @@ from tqdm import tqdm, trange
 import numpy as np
 import torch.nn as nn
 from model2 import Seq2Seq
+import gc
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-trainned_model4 = "D:\dilan\dev\pytorch_models\syntax_swap_modelv2.pt"
-tokenizer = "D:\dilan\dev\pytorch_models\syntax_swap_tokenizerv2.pt"
+trainned_model4 = "D:\dilan_files\FYP_code\Pytorch_models\syntax_swap_modelv2.pt"
+tokenizer = "D:\dilan_files\FYP_code\Pytorch_models\syntax_swap_tokenizerv2.pt"
 
-model = torch.load(trainned_model4, map_location=torch.device('cuda'))
-tokenizer = torch.load(tokenizer, map_location=torch.device('cuda'))
+model = torch.load(trainned_model4, map_location=device)
+tokenizer = torch.load(tokenizer, map_location=device)
 
 model.eval()
 
@@ -330,7 +331,9 @@ class TextDataset(Dataset):
 # TODO: change the variable names
 def translate(java_code="System.out.println()"):
 
+
     if(device == torch.device("cuda")):
+        clear_cache()
         example = Example(source=java_code.strip(), lang='java')
         examples = []
         examples.append(example)
@@ -364,8 +367,13 @@ def translate(java_code="System.out.println()"):
                     text = tokenizer.decode(t,clean_up_tokenization_spaces=False)
                     translated_code = text
                     p.append(text)
-
+        clear_cache()
         return translated_code
 
     else:
         return "Can only be translated on a cuda machine. Current device does not support cuda"
+    
+
+def clear_cache():
+    torch.cuda.empty_cache()
+    gc.collect()
