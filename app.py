@@ -3,16 +3,12 @@ from flask_cors import CORS
 import subprocess
 import translator
 #import generator
+import esprima
+import escodegen
+import re
+
 app = Flask(__name__)
 CORS(app)
-
-
-# @app.route('/')
-# def hello_world():
-#     return "Welcome to SyntaxSwap!"
-
-# This is the route that will be called when the user clicks the "Compile" button
-# This is will compile the code that the user has written in the editor and return the result of the compilation
 
 """
 @app.route("/compile", methods=["POST"])
@@ -45,18 +41,35 @@ def generate():
     else:
         return render_template('home.html')
 
+
 @app.route('/translate', methods=['POST'])
 def translate():
     javascript_code = ""
+    formatted_js_code = ""
+    ast = ""
     if request.method == "POST":
         java_code = request.json['java_code']
+        java_regex = r'"([^"\\]*(?:\\.[^"\\]*)*)"'
+        java_string_literals = re.findall(java_regex, java_code)
+
         try:
             javascript_code = translator.translate(java_code)
         except:
             print("error occured in translation")
     
+        try:
+            ast = esprima.parseScript(javascript_code)
+            formatted_js_code = str(escodegen.generate(ast))
+            js_regex = r'\'([^"\\]*(?:\\.[^"\\]*)*)\''
+            js_string_literals = [(match.group(1), match.start()) for match in re.finditer(js_regex, java_code)]
+        except:
+            print("error occured in parsing")
+            formatted_js_code = javascript_code
+
     return {'javascript_code': javascript_code,
-            'string_labels':"string labels"
+            'string_labels': java_string_literals,
+            'ast': str(ast),
+            'formatted_jscode' : formatted_js_code
             }
 
 @app.route('/copy')

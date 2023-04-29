@@ -328,30 +328,22 @@ class TextDataset(Dataset):
                 torch.tensor(self.examples[item].target_mask),)
     
 
-# TODO: change the variable names
+
 def translate(java_code="System.out.println()"):
-
-
     if(device == torch.device("cuda")):
         clear_cache()
         example = Example(source=java_code.strip(), lang='java')
         examples = []
         examples.append(example)
-
         print("Parsers :",parsers)
         code_tokens, dfg=extract_dataflow(example.source, parsers['java'], 'java')
         code_tokens=[tokenizer.tokenize('@ '+x)[1:] if idx!=0 else tokenizer.tokenize(x) for idx,x in enumerate(code_tokens)]
 
-        
-        # eval_examples = read_examples(file)
         eval_features = convert_examples_to_features(examples, tokenizer,stage='test')
         eval_data = TextDataset(eval_features, max_source_length) 
-
-        # Calculate bleu
         eval_sampler = SequentialSampler(eval_data)
         eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=8,num_workers=0)
 
-        p=[]
         translated_code = ""
         for batch in tqdm(eval_dataloader,total=len(eval_dataloader)):
             batch = tuple(t.to(device) for t in batch)
@@ -366,10 +358,8 @@ def translate(java_code="System.out.println()"):
                         t=t[:t.index(0)]
                     text = tokenizer.decode(t,clean_up_tokenization_spaces=False)
                     translated_code = text
-                    p.append(text)
         clear_cache()
         return translated_code
-
     else:
         return "Can only be translated on a cuda machine. Current device does not support cuda"
     
